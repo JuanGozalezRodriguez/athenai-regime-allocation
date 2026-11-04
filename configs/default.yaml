@@ -1,0 +1,70 @@
+# Configuración por defecto del pipeline AthenAI Regime Allocation.
+# Todos los parámetros del proyecto viven aquí: no hay números mágicos en el código.
+
+seed: 42
+
+paths:
+  raw: data/raw                 # datos del organizador (NO versionados)
+  processed: data/processed     # parquets cacheados (NO versionados)
+  figures: docs/img             # figuras del README (sí versionadas)
+
+data:
+  algos_dir: algoritmos                         # subcarpeta con los CSV de algoritmos
+  trades_file: trades_benchmark.csv
+  monthly_returns_file: benchmark_monthly_returns.csv
+  yearly_returns_file: benchmark_yearly_returns.csv
+  # Horizonte de análisis: periodo con returns oficiales del benchmark.
+  start: "2020-06-01"
+  end: "2024-12-31"
+  # Rejilla temporal de trabajo tras normalizar DST y agregar.
+  resample: "1D"               # velas de 4h -> cierre diario
+  # Detección de tramos planos (algoritmo fuera de mercado).
+  flat_atol: 1.0e-9            # tolerancia para OHLC idénticos
+  # Umbral para considerar una serie "muerta" (fracción plana máxima admitida).
+  max_flat_fraction: 0.98
+
+regimes:
+  # Ventanas (en días) de los indicadores causales.
+  trend_fast: 20
+  trend_slow: 60
+  vol_window: 20
+  dd_window: 60
+  breadth_window: 20
+  ret_horizons: [5, 20, 60]
+  annualization: 252
+  # Suavizado temporal de las probabilidades de fase (media móvil causal).
+  prob_smoothing: 5
+
+fuzzy:
+  # Puntos de las funciones de pertenencia (en unidades de los indicadores normalizados).
+  # Se documentan en docs/metodologia.md y se dibujan en el README.
+  trend_z:   {neg: [-4, -2, -0.4], neu: [-1.2, 0, 1.2], pos: [0.4, 2, 4]}
+  vol_z:     {low: [-4, -2, -0.2], mid: [-1.2, 0, 1.2], high: [0.2, 2, 4]}
+  drawdown:  {small: [0, 0, 0.08], large: [0.05, 0.25, 1.0]}   # drawdown en fracción (positivo)
+  breadth:   {weak: [0, 0, 0.5], strong: [0.5, 1, 1]}          # fracción de algos en positivo
+
+allocation:
+  rebalance: "1M"              # rebalanceo mensual
+  transaction_cost_bps: 10     # coste por lado, en puntos básicos sobre el turnover
+  risk_aversion: 0.5           # penalización de volatilidad en la recompensa
+  n_portfolios: 4              # nº de carteras predefinidas (una por fase dominante)
+  top_k_algos: 15              # nº de algoritmos candidatos por cartera
+  # Q-learning tabular.
+  q_learning:
+    alpha: 0.2
+    gamma: 0.9
+    epsilon: 0.1
+    episodes: 400
+
+splits:
+  # Walk-forward por tiempo. El TEST es estrictamente fuera de muestra.
+  train_end: "2022-12-31"
+  val_end:   "2023-12-31"
+  test_end:  "2024-12-31"
+
+quantum:
+  enabled: true                # si Qiskit no está instalado, se omite con aviso
+  n_assets: 8                  # nº de algoritmos candidatos en el QUBO
+  target_cardinality: 4        # nº a seleccionar
+  risk_lambda: 0.5             # peso del riesgo/correlación frente al retorno
+  qaoa_reps: 2                 # capas p del ansatz QAOA

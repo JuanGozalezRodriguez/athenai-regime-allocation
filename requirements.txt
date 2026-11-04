@@ -1,0 +1,19 @@
+# Entorno reproducible (probado con Python 3.10).
+# El motor de lógica difusa es una implementación propia (src/athenai/regimes/fuzzy.py),
+# no se usa scikit-fuzzy, para mantener la explicabilidad y evitar dependencias frágiles.
+numpy==1.26.4
+pandas==2.1.1
+scipy==1.11.2
+scikit-learn==1.3.1
+matplotlib==3.10.1
+pyarrow==23.0.1
+PyYAML==6.0.3
+
+# --- Desarrollo / tests (opcional) ---
+# pytest>=7.4
+# ruff>=0.3
+
+# --- Bloque 4 opcional (cuántica, EXPERIMENTAL) ---
+# El experimento QAOA usa solo las primitivas de referencia de Qiskit (statevector).
+# NO requiere qiskit-aer. Si Qiskit no está instalado, el experimento se omite con aviso.
+# qiskit>=1.0,<2.0
